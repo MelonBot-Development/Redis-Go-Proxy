@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -55,14 +55,14 @@ func (p ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		key = "token2"
 	} else {
 		limit = 2
-		proxy_set_header X-Real-IP $remote_addr;
+		// proxy_set_header X-Real-IP $remote_addr;
 		key = r.Header.Get("X-Real-IP")
 	}
 
-	res, err := limiter.Allow(r.Context(), "ratelimit:" + key, redis_rate.Limit{
+	res, err := limiter.Allow(r.Context(), "ratelimit:"+key, redis_rate.Limit{
 		Period: time.Second,
-		Rate: limit,
-		Burst: 5,
+		Rate:   limit,
+		Burst:  5,
 	})
 
 	if err != nil {
@@ -71,7 +71,7 @@ func (p ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("X-RateLimit-Limit", fmt.Sprint(limit))
 	rw.Header().Set("X-RateLimit-Remaining", fmt.Sprint(res.Remaining))
-	rw.Header().Set("X-RateLimit-Reset", fmt.Sprint(time.Now().Add(res.ResetAfter).UnixNano() / 1_000_000))
+	rw.Header().Set("X-RateLimit-Reset", fmt.Sprint(time.Now().Add(res.ResetAfter).UnixNano()/1_000_000))
 
 	if res.Allowed < 1 {
 		rw.Header().Add("Access-Control-Allow-Credentials", "true")
