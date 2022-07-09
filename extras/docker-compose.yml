@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  scheduled_tasks:
+    image: ghcr.io/melonbot/melonbot:62c5c3865a77cc3becd3c1e8e36e91637741e15d
+    command: ["bin/MelonBot.ScheduledTasks.dll"]
+    environment:
+      - "MelonBot:Database=Host=10.0.1.3;Port=5432;Username=melonbot;Password=${DATABASE_PASSWORD};Database=melonbot;Maximum Pool Size=10;Minimum Pool Size=10;Max Auto Prepare=10"
+      - "MelonBot:InfluxUrl=http://10.0.1.3:8086"
+      - "MelonBot:InfluxDb=pluralkit"
+      - "MelonBot:UseRedisMetrics=true"
+      - "MelonBot:RedisAddr=10.0.1.3:6379"
+      - "MelonBot:ConsoleLogLevel=2"
+      - "MelonBot:FileLogLevel=5"
+    restart: unless-stopped
+
+    grafana:
+      image: grafana/grafana
+      ports:
+        - 10.0.1.2:3000:3000
+      volumes:
+        - ./grafana.ini:/etc/grafana/grafana.ini
+        - ./grafana-data:/var/lib/grafana
+      restart: unless-stopped
